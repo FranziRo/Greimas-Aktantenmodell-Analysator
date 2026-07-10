@@ -1,0 +1,8 @@
+{
+  "name": "Greimas-Aktantenmodell-Analysator",
+  "description": "Wissenschaftliche Webanwendung zur automatisierten Analyse von Interviewtranskripten nach dem Aktantenmodell von Algirdas J. Greimas.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
