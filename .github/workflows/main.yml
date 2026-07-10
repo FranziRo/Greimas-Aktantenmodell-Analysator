@@ -17,7 +17,7 @@ jobs:
   deploy:
     environment:
       name: github-pages
-      url: ${{ steps: deployment.outputs.page_url }}
+      url: ${{ steps.deployment.outputs.page_url }} # <-- HIER WAR DER FEHLER (jetzt mit Punkt)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -38,7 +38,7 @@ jobs:
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './dist' # Vite erstellt die fertigen Dateien standardmäßig im 'dist'-Ordner
+          path: './dist'
           
       - name: Deploy to GitHub Pages
         id: deployment
