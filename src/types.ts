@@ -1,17 +1,24 @@
-export type ActantRole = "Adressant" | "Objekt" | "Adressat" | "Subjekt" | "Adjuvant" | "Opponent";
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
-export interface ActantAnalysis {
-  role: ActantRole;
+export type GreimasRole = 'Adressant' | 'Objekt' | 'Adressat' | 'Subjekt' | 'Adjuvant' | 'Opponent';
+
+export interface ActantRoleAnalysis {
+  role: GreimasRole;
   keywords: string[];
   interpretation: string;
   evidence: string[];
 }
 
-export interface AnalysisResponse {
-  analysis: ActantAnalysis[];
+export interface GreimasAnalysisResponse {
+  analysis: ActantRoleAnalysis[];
 }
 
-export interface ProgressState {
-  progress: number;
-  message: string;
+export interface UserSession {
+  email: string;
+  name: string;
+  imageUrl?: string;
+  idToken?: string;
 }

@@ -1,192 +1,183 @@
-import { useState, useMemo } from "react";
-import { Search, Copy, Check, ArrowUpDown, HelpCircle, FileText } from "lucide-react";
-import { ActantAnalysis } from "../types";
+/**
+ * @license
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+import { useState } from 'react';
+import { Search, ArrowUpDown, Copy, Check, FileSpreadsheet, Quote } from 'lucide-react';
+import { ActantRoleAnalysis } from '../types';
 
 interface ResultsTableProps {
-  data: ActantAnalysis[];
+  data: ActantRoleAnalysis[];
 }
 
-const ROLE_ORDER: Record<string, number> = {
-  "Adressant": 1,
-  "Objekt": 2,
-  "Adressat": 3,
-  "Subjekt": 4,
-  "Adjuvant": 5,
-  "Opponent": 6
-};
-
-const ROLE_COLORS: Record<string, string> = {
-  "Adressant": "text-blue-800 bg-blue-50/60 border-blue-100",
-  "Objekt": "text-orange-800 bg-orange-50/60 border-orange-100",
-  "Adressat": "text-green-800 bg-green-50/60 border-green-100",
-  "Subjekt": "text-teal-800 bg-teal-50/60 border-teal-100",
-  "Adjuvant": "text-lime-800 bg-lime-50/60 border-lime-100",
-  "Opponent": "text-red-800 bg-red-50/60 border-red-100"
-};
-
-const ROLE_ROW_HOVERS: Record<string, string> = {
-  "Adressant": "hover:bg-blue-50/30",
-  "Objekt": "hover:bg-orange-50/30",
-  "Adressat": "hover:bg-green-50/30",
-  "Subjekt": "hover:bg-teal-50/30",
-  "Adjuvant": "hover:bg-lime-50/30",
-  "Opponent": "hover:bg-red-50/30"
-};
+type SortField = 'role' | 'interpretation';
+type SortOrder = 'asc' | 'desc';
 
 export default function ResultsTable({ data }: ResultsTableProps) {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [sortBy, setSortBy] = useState<"logical" | "alphabetical">("logical");
-  const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortOrder, setSortOrder] = useState<SortOrder>('asc');
+  const [copiedText, setCopiedText] = useState<string | null>(null);
 
-  const handleCopy = (text: string, id: string) => {
+  const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text);
-    setCopiedId(id);
-    setTimeout(() => setCopiedId(null), 1500);
+    setCopiedText(text);
+    setTimeout(() => setCopiedText(null), 1500);
   };
 
-  const sortedAndFilteredData = useMemo(() => {
-    let result = [...data];
-
-    // Filter by search term
-    if (searchTerm.trim() !== "") {
-      const term = searchTerm.toLowerCase();
-      result = result.filter(
-        (item) =>
-          item.role.toLowerCase().includes(term) ||
-          item.interpretation.toLowerCase().includes(term) ||
-          item.keywords.some((kw) => kw.toLowerCase().includes(term)) ||
-          item.evidence.some((ev) => ev.toLowerCase().includes(term))
-      );
-    }
-
-    // Sort
-    if (sortBy === "alphabetical") {
-      result.sort((a, b) => a.role.localeCompare(b.role));
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
-      result.sort((a, b) => (ROLE_ORDER[a.role] || 99) - (ROLE_ORDER[b.role] || 99));
+      setSortField(field);
+      setSortOrder('asc');
     }
+  };
 
-    return result;
-  }, [data, searchTerm, sortBy]);
+  // Filter and sort the table content
+  const filteredAndSortedData = [...data]
+    .filter((row) => {
+      const searchLower = searchQuery.toLowerCase();
+      const roleMatch = row.role.toLowerCase().includes(searchLower);
+      const interpretationMatch = row.interpretation.toLowerCase().includes(searchLower);
+      const keywordsMatch = row.keywords.some((k) => k.toLowerCase().includes(searchLower));
+      const quotesMatch = row.evidence.some((q) => q.toLowerCase().includes(searchLower));
+      return roleMatch || interpretationMatch || keywordsMatch || quotesMatch;
+    })
+    .sort((a, b) => {
+      if (!sortField) return 0;
+      const valA = a[sortField].toLowerCase();
+      const valB = b[sortField].toLowerCase();
+
+      if (valA < valB) return sortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return sortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
 
   return (
-    <section id="results-table-section" className="bg-white rounded-xl border border-slate-200 shadow-sm flex flex-col overflow-hidden">
-      {/* Dynamic Sub-header */}
-      <div className="p-3 border-b border-slate-200 flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-50/50 gap-2">
-        <div>
-          <h2 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-            <FileText className="w-3.5 h-3.5 text-blue-900" />
-            Analyse-Ergebnisse
-          </h2>
-          <p className="text-[10px] text-slate-400">Hermeneutische Zuordnung mit Zitatbelegen</p>
+    <div id="results-table-card" className="bg-white border border-slate-200/80 rounded-2xl shadow-xs p-6 space-y-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+        <div className="flex items-center gap-2">
+          <FileSpreadsheet className="h-5 w-5 text-blue-900" />
+          <h2 className="text-lg font-semibold text-slate-900">Auswertungstabelle (Aktanten-Übersicht)</h2>
         </div>
-
-        {/* Filters/Actions in same line */}
-        <div className="flex gap-2 w-full sm:w-auto items-center">
-          <div className="relative flex-1 sm:flex-initial">
-            <Search className="w-3 h-3 text-slate-400 absolute left-2.5 top-1/2 -translate-y-1/2" />
-            <input
-              type="text"
-              placeholder="Suchen..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-7 pr-2.5 py-1 w-full sm:w-40 text-[11px] bg-white border border-slate-200 rounded focus:outline-none focus:ring-1 focus:ring-blue-900 focus:border-blue-900 transition-all placeholder:text-slate-400"
-            />
-          </div>
-
-          <button
-            onClick={() => setSortBy(prev => prev === "logical" ? "alphabetical" : "logical")}
-            className="flex items-center gap-1 px-2 py-1 text-[10px] font-bold text-slate-600 bg-white border border-slate-200 rounded hover:bg-slate-50 hover:text-slate-800 transition-colors shrink-0"
-            title="Sortierung ändern"
-          >
-            <ArrowUpDown className="w-3 h-3" />
-            {sortBy === "logical" ? "Modell" : "A-Z"}
-          </button>
+        
+        {/* Search input field */}
+        <div className="relative w-full sm:w-64 shadow-xs">
+          <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
+          <input
+            id="table-search-input"
+            type="text"
+            placeholder="Ergebnisse durchsuchen..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full text-xs pl-9 pr-3 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200"
+          />
         </div>
       </div>
 
-      {/* Main Table container */}
-      <div className="overflow-x-auto">
-        <table className="w-full text-left text-xs border-collapse min-w-[600px]">
-          <thead className="sticky top-0 bg-white z-10 border-b border-slate-200">
+      <div className="overflow-x-auto rounded-xl border border-slate-200 max-h-[500px]">
+        <table className="min-w-full divide-y divide-slate-200 text-left text-xs border-collapse">
+          {/* Sticky Header */}
+          <thead className="bg-slate-50 sticky top-0 z-10 shadow-xs">
             <tr>
-              <th className="p-2.5 font-bold text-slate-500 uppercase text-[10px] tracking-wider w-[18%]">Aktant</th>
-              <th className="p-2.5 font-bold text-slate-500 uppercase text-[10px] tracking-wider w-[22%]">Schlagwörter</th>
-              <th className="p-2.5 font-bold text-slate-500 uppercase text-[10px] tracking-wider w-[60%]">Interpretation & Belege</th>
+              <th
+                onClick={() => handleSort('role')}
+                className="px-4 py-3.5 font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors select-none"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Aktant</span>
+                  <ArrowUpDown className="h-3 w-3 text-slate-400" />
+                </div>
+              </th>
+              <th className="px-4 py-3.5 font-semibold text-slate-700 select-none">Schlüsselwörter</th>
+              <th
+                onClick={() => handleSort('interpretation')}
+                className="px-4 py-3.5 font-semibold text-slate-700 cursor-pointer hover:bg-slate-100 transition-colors select-none min-w-[200px]"
+              >
+                <div className="flex items-center gap-1.5">
+                  <span>Interpretation (wissenschaftlich)</span>
+                  <ArrowUpDown className="h-3 w-3 text-slate-400" />
+                </div>
+              </th>
+              <th className="px-4 py-3.5 font-semibold text-slate-700 select-none min-w-[160px]">Beleg 1</th>
+              <th className="px-4 py-3.5 font-semibold text-slate-700 select-none min-w-[160px]">Beleg 2</th>
+              <th className="px-4 py-3.5 font-semibold text-slate-700 select-none min-w-[160px]">Beleg 3</th>
             </tr>
           </thead>
-          
-          <tbody className="divide-y divide-slate-100">
-            {sortedAndFilteredData.length > 0 ? (
-              sortedAndFilteredData.map((row) => (
-                <tr 
-                  key={row.role} 
-                  className={`transition-all duration-150 group ${ROLE_ROW_HOVERS[row.role] || "hover:bg-slate-50/40"}`}
+
+          {/* Table Body with zebra striping */}
+          <tbody className="divide-y divide-slate-200 bg-white">
+            {filteredAndSortedData.length > 0 ? (
+              filteredAndSortedData.map((row, idx) => (
+                <tr
+                  key={row.role}
+                  className={`hover:bg-slate-50/50 transition-colors ${
+                    idx % 2 === 0 ? 'bg-white' : 'bg-slate-50/20'
+                  }`}
                 >
-                  {/* Aktant Column */}
-                  <td className="p-2.5 align-top">
-                    <span className={`inline-block px-2 py-0.5 text-[10px] font-bold rounded border ${ROLE_COLORS[row.role] || "bg-slate-100"}`}>
-                      {row.role}
-                    </span>
+                  {/* Role name */}
+                  <td className="px-4 py-3 font-semibold text-slate-900 align-top">
+                    {row.role}
                   </td>
 
-                  {/* Keywords Column */}
-                  <td className="p-2.5 align-top">
+                  {/* Keywords tags */}
+                  <td className="px-4 py-3 align-top">
                     <div className="flex flex-wrap gap-1">
-                      {row.keywords && row.keywords.length > 0 && row.keywords[0] !== "" ? (
-                        row.keywords.map((kw, kwIdx) => (
-                          <span 
-                            key={kwIdx} 
-                            className="inline-block px-1.5 py-0.5 text-[9px] font-mono bg-slate-50 text-slate-600 border border-slate-100 rounded"
-                          >
-                            {kw}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-[10px] text-slate-400 italic">Nicht bestimmt</span>
-                      )}
+                      {row.keywords.map((kw, i) => (
+                        <span
+                          key={i}
+                          className="px-1.5 py-0.5 bg-blue-50 text-blue-800 text-[10px] font-medium rounded border border-blue-100"
+                        >
+                          {kw}
+                        </span>
+                      ))}
                     </div>
                   </td>
 
-                  {/* Interpretation & Belege Column merged for high density */}
-                  <td className="p-2.5 align-top text-slate-700 text-xs leading-relaxed space-y-2">
-                    <p className="italic text-slate-600 leading-normal">{row.interpretation}</p>
-                    
-                    {/* Compact Quotes Inside */}
-                    {row.evidence && row.evidence.length > 0 && row.evidence.some(ev => ev.trim() !== "") && (
-                      <div className="pt-1.5 border-t border-slate-100/60 flex flex-col gap-1">
-                        <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest block">Textbeleg:</span>
-                        {row.evidence.map((quote, qIdx) => {
-                          if (!quote.trim()) return null;
-                          const quoteId = `${row.role}-quote-${qIdx}`;
-                          return (
-                            <div 
-                              key={qIdx} 
-                              className="relative bg-slate-50/50 hover:bg-slate-50 border-l border-slate-300 pl-2 pr-6 py-1 rounded text-[10px] text-slate-500 italic break-words transition-all group/quote"
-                            >
+                  {/* Interpretation */}
+                  <td className="px-4 py-3 text-slate-600 align-top leading-relaxed text-[11px] max-w-xs whitespace-normal">
+                    {row.interpretation}
+                  </td>
+
+                  {/* Evidence Quotes 1, 2, 3 */}
+                  {[0, 1, 2].map((quoteIndex) => {
+                    const quote = row.evidence[quoteIndex];
+                    return (
+                      <td key={quoteIndex} className="px-4 py-3 align-top text-slate-500 leading-normal max-w-[180px] whitespace-normal">
+                        {quote ? (
+                          <div className="group relative flex flex-col justify-between h-full min-h-[40px] bg-slate-50/50 hover:bg-slate-50 border border-slate-200/60 rounded-lg p-2 transition-all">
+                            <span className="italic block pl-3 relative text-[10.5px]">
+                              <Quote className="h-2 w-2 text-slate-300 absolute left-0 top-1" />
                               „{quote}“
+                            </span>
+                            <div className="flex justify-end mt-1.5">
                               <button
-                                onClick={() => handleCopy(quote, quoteId)}
-                                className="absolute right-1 top-1/2 -translate-y-1/2 p-0.5 text-slate-300 hover:text-slate-600 rounded bg-white border border-slate-200/50 opacity-0 group-hover/quote:opacity-100 transition-all shadow-xs"
+                                id={`copy-btn-${row.role}-${quoteIndex}`}
+                                onClick={() => handleCopy(quote)}
+                                className="p-1 rounded bg-white border border-slate-200 text-slate-400 hover:text-slate-600 hover:border-slate-300 transition-all cursor-pointer"
                                 title="Zitat kopieren"
                               >
-                                {copiedId === quoteId ? (
-                                  <Check className="w-2.5 h-2.5 text-emerald-600" />
+                                {copiedText === quote ? (
+                                  <Check className="h-3 w-3 text-emerald-600" />
                                 ) : (
-                                  <Copy className="w-2.5 h-2.5" />
+                                  <Copy className="h-3 w-3" />
                                 )}
                               </button>
                             </div>
-                          );
-                        })}
-                      </div>
-                    )}
-                  </td>
+                          </div>
+                        ) : (
+                          <span className="text-slate-300 italic text-[10px]">Kein Beleg</span>
+                        )}
+                      </td>
+                    );
+                  })}
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={3} className="p-6 text-center text-slate-400 text-xs italic">
+                <td colSpan={6} className="px-4 py-8 text-center text-slate-400 italic">
                   Keine Ergebnisse gefunden.
                 </td>
               </tr>
@@ -194,6 +185,6 @@ export default function ResultsTable({ data }: ResultsTableProps) {
           </tbody>
         </table>
       </div>
-    </section>
+    </div>
   );
 }

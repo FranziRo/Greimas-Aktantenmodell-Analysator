@@ -1,6 +1,6 @@
 {
-  "name": "AI Studio Console",
-  "description": "Verwalten Sie Ihre API-Schlüssel und lernen Sie Schritt-für-Schritt, wie Sie sie in Ihren Anwendungen einbinden.",
+  "name": "Greimas Aktantenmodell-Analysator",
+  "description": "Akademische Webanwendung zur präzisen Analyse von Interviewtranskripten basierend auf dem semiotischen Aktantenmodell von Algirdas J. Greimas.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
