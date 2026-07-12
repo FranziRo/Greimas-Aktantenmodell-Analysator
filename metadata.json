@@ -1,8 +1,6 @@
 {
-  "name": "Greimas-Aktantenmodell-Analysator",
-  "description": "Wissenschaftliche Webanwendung zur automatisierten Analyse von Interviewtranskripten nach dem Aktantenmodell von Algirdas J. Greimas.",
+  "name": "AI Studio Console",
+  "description": "Verwalten Sie Ihre API-Schlüssel und lernen Sie Schritt-für-Schritt, wie Sie sie in Ihren Anwendungen einbinden.",
   "requestFramePermissions": [],
-  "majorCapabilities": [
-    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
-  ]
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
