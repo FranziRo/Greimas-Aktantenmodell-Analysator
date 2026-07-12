@@ -4,17 +4,14 @@
  */
 
 import { useState, useEffect, FormEvent } from 'react';
-import { Settings, LogOut, GraduationCap, Key, Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
-import { UserSession } from '../types';
+import { Settings, GraduationCap, Key, Eye, EyeOff, Check, X, ShieldAlert } from 'lucide-react';
 
 interface HeaderProps {
-  session: UserSession;
-  onLogout: () => void;
   apiKey: string;
   onApiKeyChange: (key: string) => void;
 }
 
-export default function Header({ session, onLogout, apiKey, onApiKeyChange }: HeaderProps) {
+export default function Header({ apiKey, onApiKeyChange }: HeaderProps) {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [tempKey, setTempKey] = useState(apiKey);
   const [showKey, setShowKey] = useState(false);
@@ -56,7 +53,7 @@ export default function Header({ session, onLogout, apiKey, onApiKeyChange }: He
             </div>
 
             {/* Profile & Settings Button */}
-            <div className="flex items-center gap-2 sm:gap-4">
+            <div className="flex items-center gap-2">
               {/* API Settings Gear Icon */}
               <button
                 id="api-settings-btn"
@@ -73,36 +70,6 @@ export default function Header({ session, onLogout, apiKey, onApiKeyChange }: He
                   <span className="absolute top-0 right-0 block h-2 w-2 rounded-full bg-amber-500 ring-2 ring-white" />
                 )}
               </button>
-
-              {/* User Profile */}
-              <div className="flex items-center gap-2 border-l border-slate-200 pl-3 sm:pl-4">
-                {session.imageUrl ? (
-                  <img
-                    src={session.imageUrl}
-                    alt={session.name}
-                    className="h-8 w-8 rounded-full border border-slate-200 object-cover"
-                    referrerPolicy="no-referrer"
-                  />
-                ) : (
-                  <div className="h-8 w-8 rounded-full bg-blue-100 border border-blue-200 flex items-center justify-center text-xs font-bold text-blue-800">
-                    {session.name.substring(0, 2).toUpperCase()}
-                  </div>
-                )}
-                <div className="hidden md:block text-left">
-                  <p className="text-xs font-medium text-slate-800 leading-none">{session.name}</p>
-                  <p className="text-[10px] text-slate-400 mt-0.5 leading-none">{session.email}</p>
-                </div>
-
-                {/* Logout Button */}
-                <button
-                  id="logout-btn"
-                  onClick={onLogout}
-                  className="p-1.5 ml-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors"
-                  title="Abmelden"
-                >
-                  <LogOut className="h-4.5 w-4.5" />
-                </button>
-              </div>
             </div>
           </div>
         </div>
