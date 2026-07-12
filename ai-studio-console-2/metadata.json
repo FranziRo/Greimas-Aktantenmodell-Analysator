@@ -1,0 +1,6 @@
+{
+  "name": "AI Studio Console",
+  "description": "Verwalten Sie Ihre API-Schlüssel und lernen Sie Schritt-für-Schritt, wie Sie sie in Ihren Anwendungen einbinden.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
